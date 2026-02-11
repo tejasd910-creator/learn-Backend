@@ -1,0 +1,4 @@
+// write all the files name here that you either don't wnat to push or can be creatd in the system on running the code
+
+node_modules
+.env
