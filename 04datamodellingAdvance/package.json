@@ -1,0 +1,16 @@
+{
+  "name": "04datamodellingadvance",
+  "version": "1.0.0",
+  "description": "ecommerce and hotel data-model",
+  "license": "ISC",
+  "author": "Tejas Dixit",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^5.2.1",
+    "mongoose": "^9.2.1"
+  }
+}
