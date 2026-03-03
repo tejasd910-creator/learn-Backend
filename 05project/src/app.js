@@ -9,11 +9,20 @@ app.use(cors({
     credentials:true
 }))
 
-app.use(express.jason({limit : "16kb"}))    // limit on jason data max 16kb only
+app.use(express.json({limit : "16kb"}))    // limit on jason data max 16kb only
 app.use(express.urlencoded({extended: true, limit : "16kb"}))        // help in maintaing url structure extended is not necessary and limit is as pre req
 app.use(express.static("public"))         // here public is just a name of folder where you want to store data used everywhere like image or file
 app.use(cookieParser())        // to store cookies in browser by server (secure cookies are installed and delete by server only)
 
+
+// routes import 
+import  userRouter  from './routes/user.routes.js'
+
+
+//routes declaration
+app.use("/api/v1/users", userRouter)
+
+// http://localhost:8000/api/v1/users/register
 
 
 export { app }

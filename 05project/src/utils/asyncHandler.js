@@ -1,7 +1,7 @@
 // Method 1 (short but advance js)
 const asyncHandler = (requestHandler) => {
-    (req, res, next) => {
-        Promise.resolve(requestHandler(req, res, next)).catch((err) => next(err))            // Promise is like a
+    return (req, res, next) => {
+        Promise.resolve(requestHandler(req, res, next)).catch((err) => next(err)) // Promise is like a
         //Promise is a built-in JavaScript object that represents a value that may complete:
         //if success then reslove requestHandler as promise
         //if fail then Catches the error & Passes it to Express error middleware
