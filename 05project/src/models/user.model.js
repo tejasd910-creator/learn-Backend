@@ -54,7 +54,7 @@ const userSchema = new Schema(
 
 userSchema.pre("save", async function (next) {                  // jab bi data save ho pahele function execute kar do. Here arrow function is not used because it don't have this. reference and here it is required. function takes time so use async
     if (!this.isModified("password")) return next()
-    this.password = bcrypt.hash(this.password, 10)
+    this.password = await bcrypt.hash(this.password, 10)         // password process hon mai time lage ga so await
     next()
 })
 
