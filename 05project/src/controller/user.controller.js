@@ -37,7 +37,7 @@ const registerUser = asyncHandler(async (req, res) => {
 
     //CHECK USER EXISTS OR NOT
 
-    const existedUser = User.findOne({         //findOne method return the first user with matcing data
+    const existedUser = await User.findOne({         //findOne method return the first user with matcing data
         $or: [{ username }, { email }]        //$or is an operator that check for the given fields entered in the array
     })
 
@@ -50,6 +50,8 @@ const registerUser = asyncHandler(async (req, res) => {
     // req.body  method by express give access to content of file(default)
 
     //multer give req.files access to access files (? == if exist)
+    //console.log(req.files);
+    
     const avatarLocalPath = req.files?.avatar[0]?.path;         // give the local path of the file that exist in the system
     const coverImageLocalPath = req.files?.coverImage[0]?.path;         // give the local path of the file that exist in the system
 
@@ -70,9 +72,9 @@ const registerUser = asyncHandler(async (req, res) => {
 
     //CREATING USER
 
-    User.create({                         // User have create method by default to create a user
+    const user = await User.create({                         // User have create method by default to create a user
         fullName,
-        avatarL: avatar.url,
+        avatar: avatar.url,
         coverImage: coverImage?.url || "",
         email,
         password,
@@ -81,7 +83,7 @@ const registerUser = asyncHandler(async (req, res) => {
 
     // CHECK IF CREATED SUCCESSFULLY
 
-    const createdUser = await User.findById(user_id).select(      //MongoDb create a unique userId for each user by default anf to check for that id use findById method
+    const createdUser = await User.findById(user._id).select(      //MongoDb create a unique userId for each user by default anf to check for that id use findById method
         "-password -refreshToken"           // select method help to decide which field need not to be check for user checking "-" indicate this field neednot ti be checked
     )
 
