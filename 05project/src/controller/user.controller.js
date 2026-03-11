@@ -17,7 +17,7 @@ const registerUser = asyncHandler(async (req, res) => {
     //return response
 
     const { fullName, email, username, password } = req.body
-    console.log("email :", email);
+    // console.log("email :", email);
 
     //CHECK INVAILD ENTRY
 
@@ -53,7 +53,12 @@ const registerUser = asyncHandler(async (req, res) => {
     //console.log(req.files);
     
     const avatarLocalPath = req.files?.avatar[0]?.path;         // give the local path of the file that exist in the system
-    const coverImageLocalPath = req.files?.coverImage[0]?.path;         // give the local path of the file that exist in the system
+    // const coverImageLocalPath = req.files?.coverImage[0]?.path;         // give the local path of the file that exist in the system
+
+    let coverImageLocalPath;
+    if(req.files && Array.isArray(req.files.coverImage) && req.files.coverImage.length > 0){
+        coverImageLocalPath = req.files.coverImage[0].path
+    }
 
     if(!avatarLocalPath){
         throw new ApiError(400, "Avatar file is required")
