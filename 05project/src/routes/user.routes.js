@@ -1,6 +1,7 @@
 import { Router } from "express"
-import { registerUser } from "../controller/user.controller.js"
+import { loginUser, logoutUser, registerUser } from "../controller/user.controller.js"
 import { upload } from "../middlewares/multer.middleware.js"
+import { verifyJWT } from "../middlewares/auth.middleware.js"
 
 const userRouter = Router()
 
@@ -18,5 +19,10 @@ userRouter.route("/register").post(
     registerUser
 )
 
+userRouter.route("/login").post(loginUser)
+
+//secured routes
+
+userRouter.route("/logout").post(verifyJWT, logoutUser)            //verifyJWT is s middleware so i.e why next() is used in yhe middleware to tell the next step(first verifyJWt then logoutUser)
 
 export default userRouter
