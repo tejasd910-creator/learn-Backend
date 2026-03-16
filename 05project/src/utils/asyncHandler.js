@@ -5,13 +5,13 @@ const asyncHandler = (requestHandler) => {
         //Promise is a built-in JavaScript object that represents a value that may complete:
         //if success then reslove requestHandler as promise
         //if fail then Catches the error & Passes it to Express error middleware
-    
+
     }
 }
 
 
 
-export {asyncHandler}
+export { asyncHandler }
 
 
 

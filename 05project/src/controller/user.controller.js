@@ -158,7 +158,7 @@ const loginUser = asyncHandler(async (req, res) => {
     }
 
     //TOKEN GENERATION
-    const {accessToken, refreshToken} = await generateAccessAndRefreshTokens(user._id)
+    const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(user._id)
 
     //since above user don't have any token right now so again call database
     const loggedInUser = await User.findById(user._id).select("-password -refreshToken")
@@ -167,26 +167,26 @@ const loginUser = asyncHandler(async (req, res) => {
         httpOnly: true,               // By default any one can access and modified cookies but after httpOnly and secure is true only server can modified cookies
         secure: true
     }
-  
+
     //COOKIE RESPONSE
 
     return res
-    .status(200)
-    .cookie("accessToken", accessToken, options)           // method to directly send cookie(key, value, options)
-    .cookie("refreshToken", refreshToken, options)
-    .json(                                                 // json response
-        new ApiResponse(                                   // response api
-            200,                                           // status code
-            {
-                user: loggedInUser, accessToken, refreshToken                 // data if frontEnd want to access tokens
-            },
-            "User logged in Successfully"                  // message
+        .status(200)
+        .cookie("accessToken", accessToken, options)           // method to directly send cookie(key, value, options)
+        .cookie("refreshToken", refreshToken, options)
+        .json(                                                 // json response
+            new ApiResponse(                                   // response api
+                200,                                           // status code
+                {
+                    user: loggedInUser, accessToken, refreshToken                 // data if frontEnd want to access tokens
+                },
+                "User logged in Successfully"                  // message
+            )
         )
-    )
 })
 
 //LOGOUT USER (we are not able to logout user so we created a middleware to do so)
-const logoutUser = asyncHandler(async(req, res) => {              
+const logoutUser = asyncHandler(async (req, res) => {
     //with the help of verifyJWT middleware now we have user detaild in the req 
     User.findByIdAndUpdate(                    // method to find and update database
         req.user._id,                          // find _id from user in req
@@ -205,14 +205,14 @@ const logoutUser = asyncHandler(async(req, res) => {
         httpOnly: true,               // By default any one can access and modified cookies but after httpOnly and secure is true only server can modified cookies
         secure: true
     }
-  
+
     //COOKIE RESPONSE
 
     return res
-    .status(200)
-    .clearCookie("accessToken", options)           // method to directly send cookie(key, value, options)
-    .clearCookie("refreshToken", options)
-    .json(new ApiResponse(200, {}, "User logged Out"))
+        .status(200)
+        .clearCookie("accessToken", options)           // method to directly send cookie(key, value, options)
+        .clearCookie("refreshToken", options)
+        .json(new ApiResponse(200, {}, "User logged Out"))
 })
 
 
