@@ -1,7 +1,20 @@
 import { Router } from "express"
-import { loginUser, logoutUser, refreshAccessToken, registerUser } from "../controller/user.controller.js"
+import { 
+    changeCurrentPassword, 
+    getCurrentUser, 
+    getUserChannelProfile, 
+    getWatchedHistory, 
+    loginUser, 
+    logoutUser, 
+    refreshAccessToken, 
+    registerUser, 
+    updateAccountDetails, 
+    updateUserAvatar, 
+    updateUserCoverImage 
+} from "../controller/user.controller.js"
 import { upload } from "../middlewares/multer.middleware.js"
 import { verifyJWT } from "../middlewares/auth.middleware.js"
+import { verify } from "jsonwebtoken"
 
 const userRouter = Router()
 
@@ -23,6 +36,15 @@ userRouter.route("/login").post(loginUser)
 
 //secured routes
 userRouter.route("/logout").post(verifyJWT, logoutUser)            //verifyJWT is s middleware so i.e why next() is used in yhe middleware to tell the next step(first verifyJWt then logoutUser)
-userRouter.route("/refresh-token").post(refreshAccessToken)        // verify wala kaam usercontroller mai he kar diya so verifyJWT wala middleware is not use
+userRouter.route("/refresh-token").post(refreshAccessToken)        // verify wala kaam usercontroller mai he kar diya so verifyJWT wala middleware is not used here
+userRouter.route("/change-password").post(verifyJWT, changeCurrentPassword)
+userRouter.route("/current-user").get(verifyJWT, getCurrentUser)
+userRouter.route("/update-account").patch(verifyJWT, updateAccountDetails)
+userRouter.route("'/avatar").patch(verifyJWT, upload.single("avatar"), updateUserAvatar)
+userRouter.route("/cover-image").patch(verifyJWT, upload.single("coverImage"), updateUserCoverImage)
+userRouter.route("/c/:username").get(verifyJWT, getUserChannelProfile)
+userRouter.route("/history").get(verifyJWT, getWatchedHistory)
+
+
 
 export default userRouter
