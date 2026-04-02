@@ -4,6 +4,7 @@ import { User } from "../models/user.model.js"
 import { uploadCloudinary } from "../utils/cloudinary.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import jwt from "jsonwebtoken"
+import mongoose from "mongoose";
 
 //creating access and refresh token method (easy for code reusability)
 
@@ -452,6 +453,64 @@ const getUserChannelProfile = asyncHandler(async (req, res) => {
     )
 })
 
+const getWatchedHistory = asyncHandler(async(req, res) => {
+    //req.user._id: actually give a string which mongoose automatically convert to mongodb id in everydb call
+    //inside pipelines al data go directly so we need to convert sring into monngodb id using mongoose method
+
+    const user = await User.aggregate([
+        {
+            $match: {                 // always first field
+                _id: new mongoose.Types.ObjectId(req.user._id)   //give access to user model
+            }
+        },
+        {
+            $lookup: {//look inside user
+                from: "videos",                 //videos ke aander lookup
+                localField: "watchHistory",     // current user ke watchhistory ka data
+                foreignField: "_id",            //videos ki id se match karo
+                as: "watchHistory",             // return as watchHistory
+                pipeline: [                 //This pipeline give access to videos model 
+                    {
+                        $lookup: {//look inside video
+                            from: "user",
+                            localField: "owner",
+                            foreignField: "_id",
+                            as: "owner",
+                            pipeline: [
+                                {
+                                    $project: { //directly return data here instead of doing external
+                                        fullName: 1,
+                                        username: 1,
+                                        avatar: 1
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        $addFields: { //this further pipeline help frontend to access id easily by directly returning the id
+                            owner: {
+                                $first: "$owner"   //$first directly give the first element of the owner array
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    ])
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(
+            200,
+            user[0].watchHistory,         // $lookup always return data in array so even if the user is unique the data still wrapped it in array
+                                          // look like user = [{single user}] so to access that user we write user[0]
+            "Watch history fetched successfully"
+        )
+    )
+})
+
 export {
     registerUser,
     loginUser,
@@ -462,5 +521,6 @@ export {
     updateAccountDetails,
     updateUserAvatar,
     updateUserCoverImage,
-    getUserChannelProfile
+    getUserChannelProfile,
+    getWatchedHistory
 }
