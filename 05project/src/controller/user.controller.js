@@ -290,8 +290,8 @@ const getCurrentUser = asyncHandler(async (req, res) => {
     return res
         .status(200)
         .json(new ApiResponse(
-            200, 
-            req.user, 
+            200,
+            req.user,
             "current user fetched successfully"
         ))
 })
@@ -326,7 +326,7 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
     if (!avatarLocalPath) {
         throw new ApiError(400, "Avatar file is missing")
     }
-    
+
     // TODO to delete older avatar files local paths
     const avatar = await uploadCloudinary(avatarLocalPath)
 
@@ -337,18 +337,18 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
     const user = await User.findByIdAndUpdate(
         req.user?._id,
         {
-            $set:{
+            $set: {
                 avatar: avatar.url
-            } 
+            }
         },
-        {new : true}
+        { new: true }
     ).select("-password")
 
     return res
-    .status(200)
-    ,json(
-        new ApiResponse(200, user, "Avatar is updated successfully")
-    )
+        .status(200)
+        , json(
+            new ApiResponse(200, user, "Avatar is updated successfully")
+        )
 })
 
 const updateUserCoverImage = asyncHandler(async (req, res) => {
@@ -358,7 +358,7 @@ const updateUserCoverImage = asyncHandler(async (req, res) => {
         throw new ApiError(400, "CoverImage file is missing")
     }
 
-    const coverImage  = await uploadCloudinary(coverImageLocalPath)
+    const coverImage = await uploadCloudinary(coverImageLocalPath)
 
     if (!coverImage.url) {
         throw new ApiError(400, "Error while uploading on CoverImage")
@@ -367,17 +367,88 @@ const updateUserCoverImage = asyncHandler(async (req, res) => {
     const user = await User.findByIdAndUpdate(
         req.user?._id,
         {
-            $set:{
+            $set: {
                 coverImage: coverImage.url
-            } 
+            }
         },
-        {new : true}
+        { new: true }
     ).select("-password")
 
     return res
+        .status(200)
+        , json(
+            new ApiResponse(200, user, "Cover Image is updated successfully")
+        )
+})
+
+const getUserChannelProfile = asyncHandler(async (req, res) => {
+    const { username } = req.params
+
+    if (!username?.trim()) {
+        throw new ApiError(400, "username is missing")
+    }
+
+    const channel = await User.aggregate([                  //aggregate is a pipelining method that takes an array of multiple pipelining fields
+        {
+            $match: {                                       //$match is a pipelining field use to match the required property in the db
+                username: username?.toLowerCase()
+            }
+        },
+        {   //To find the number of subscribers, find how many owner have channel name saved as owner name
+            $lookup: {
+                from: "subscriptions", // from where to look data (from Subscription model but by default the name is saved as lowercase plural)
+                localField: "_id",     // what local field you want to check in the foreign data
+                foreignField: "channel",  // how that field is saved in the foreign data 
+                as: "subscribers"   // how you want that data to be return as
+            }
+        },
+        {   //To find the number to channel owner had subscrided find how many subscriber name save as owner name in the db
+            $lookup: {
+                from: "subscriptions", // from where to look data (from Subscription model but by default the name is saved as lowercase plural)
+                localField: "_id",     // what local field you want to check in the foreign data
+                foreignField: "subscriber",  // how that field is saved in the foreign data 
+                as: "subscribedTo"   // how you want that data to be return as
+            }
+        },
+        {
+            $addFields: {             // keep the above data as usual but also add the specified filed in the output
+                subscribersCount: {
+                    $size: "$subscribers"       // add all the number of subscribers(now it is a field so use $)
+                },
+                channelSubscribedToCount: {
+                    $size: "$subscribedTo"     // add all the number of channel subscribed
+                },
+                isSubscribed: {
+                    $cond: {               // give true or false(have three parameter if(condition) then(if true) else(if false))
+                        if: {$in: [req.user?._id, "$subscribers.subscriber"]},                //$in operator to check presence(both in array and object) (subscribers field ke aander subscriber)
+                        then: true,
+                        else: false
+                    }
+                }
+            }
+        },
+        {
+            $project: {            // what all data need to be send to frontEnd
+                fullName: 1,
+                username: 1,
+                subscribersCount: 1,
+                channelSubscribedToCount: 1,
+                isSubscribed: 1,
+                avatar: 1,
+                coverImage: 1,
+                email: 1
+            }
+        }
+    ])
+
+    if(!channel?.length) {
+        throw new ApiError(404, "channel does not exists")
+    }
+
+    return res
     .status(200)
-    ,json(
-        new ApiResponse(200, user, "Cover Image is updated successfully")
+    .json(
+        new ApiResponse(200, channel[0], "User channel fetched successfully")
     )
 })
 
@@ -390,5 +461,6 @@ export {
     getCurrentUser,
     updateAccountDetails,
     updateUserAvatar,
-    updateUserCoverImage
+    updateUserCoverImage,
+    getUserChannelProfile
 }
